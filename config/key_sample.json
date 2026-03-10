@@ -1,0 +1,46 @@
+[
+	{
+		"secret_type": "Database Connection String",
+		"known_key_fake": "postgresql://testuser1:TestPass123!@219.223.206.186:5433/testdb"
+	},
+	{
+		"secret_type": "OpenAI API Key",
+		"known_key_fake": "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"
+	},
+	{
+		"secret_type": "MySQL JDBC URL",
+		"known_key_fake": "jdbc:mysql://219.223.206.186:3307/testdb?user=testuser&password=TestPass124!"
+	},
+	{
+		"secret_type": "Hugging Face API Token",
+		"known_key_fake": "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"
+	},
+	{
+		"secret_type": "MongoDB Connection String",
+		"known_key_fake": "mongodb://testuser:TestPass124!@219.223.206.186:27018/?authSource=admin"
+	},
+	{
+		"secret_type": "HTTP Basic Auth URL",
+		"known_key_fake": "http://testuser:TestPass124!@219.223.206.186:8080"
+	},
+	{
+		"secret_type": "OpenSSH Private Key",
+		"known_key_fake": "-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaCIrZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAABFwAAAAdzc2gtcn\nNhAAAAAwEAAQAAAQEArcOpezH8XngvsI3qpDjr8fztISoCIa57OGAhLcl0SMRE0nVhFjE3\nNenCKYmHjEi/NOcXq/pxsCNSVZsXg3APX+IcGuNZVfDffsT0TDWyAeb8R0U2E9y9zRQObU\n4Pm5EqSGnbHubBO2mJOyE5yOTw+FmK6VnTc5qwDIzbjw6M/+4EGfSx8Ae9jl/OKKIymNHQ\nU3MaeYPlWu9lDhFptU6MXPYDcqHijyqnvzwl8j1vyITdnz1+mgSXvvQOjf0Zgj4pYNt3+j\n/FMM68SUuPko6ctGJQ7PqII//g5c+Hrd6YtASaxa1JXSX9vNYNIH8KKgIIveucT9SB4weh\nezJPOQ5Y9QAAA8jY7raM2O62jAAAAAdzc2gtcnNhAAABAQCtw6l7MfxeeC+wjeqkOOvx/O\n0hKgIhrns4YCEtyXRIxETSdWEWMTc16cIpiYeMSL805xer+nGwI1JVmxeDcA9f4hwa41lV\n8N9+xPRMNbIB5vxHRTYT3L3NFA5tTg+bkSpIadse5sE7aYk7ITnI5PD4WYrpWdNzmrAMjN\nuPDoz/7gQZ9LHwB72OX84oojKY0dBTcxp5g+Va72UOEWm1Toxc9gNyoeKPKqe/PCXyPW/I\nhN2fPX6aBJe+9A6N/RmCPilg23f6P8UwzrxJS4+Sjpy0YlDs+ogj/+Dlz4et3pi0BJrFrU\nldJf281g0gfwoqAgi965xP1IHjB6F7Mk85Dlj1AAAAAwEAAQAAAQAnMbekVKmOq4BiTBiN\nk1NRIZJhRSb27vLXTAOf3s1ubmrxp81O4qoH7KLBmMZs06nhZnDV92c2ajkzmwiKOrgVEh\nzxya9Ibc0TvJw4JnJw8GeeMdPZVhSv0eLRL+bgWbWWYN4ukbErVApCvqNYl59s/VGSghLq\nhA1Kv2j00zzlqyvj758fqoMzZ6igBe6bSkv+StZW/ppdogCsP5BozyVeBd7eNpJ0rFmbE4\nqO0cfgzSUsRaO8z+i9LZrWNmfNj42UKpGynnM3OoP7qYexGwd88riiTQw0o01hbj+pMMws\nnQXiRIiP3q/m7uuVuTC8xBQWS1U4mXvp5GcqnQsbsqaxAAAAgAHHJDyUCIEf4wccHWzOmJ\nQD49sl1jMKWILe80KJxgPkn+gH6acPZeZwGDA41/oBBxVHM7B+fQGZjgRFhKsIQsal+Czw\n8WquQqfg75X9oDHdsvO0HUbFgm/bLD+ETMbTQP6ZEkqLiA78Q1qW0k/RuLZm8hED7+Gmtx\nss+78geoaOAAAAgQC47A+t2RH4v95dywwMupBC5E0TPIQTURu/1V1nqr07bvRYzD8EP4XT\n6MBmIQsvjOMxtg1j3hLOoCN25HWrohqAvmmcHJ1W4/w6+opTvSZb2V406ZYHj2+4EshD8D\nTsO9psDD7kP4eeJe0nzM64mqWdCaA0VZx4bKTtZIHJNX4xKQAAAIEA8I2yQazlHIOS9JD5\n3IYIRxZ8Bqtxw+K78NOZDwyTVtl2qKGHlEPEaQgfS8gmimmF8jssamNaVQd26X3rLed+QR\nZ4pleIIMYjUJkrSBnVqCFmiJhmdYUL17rVTR6XUbeWdArX8Ox72rd/CC0rU9IbXnnHeG4z\nfaZH8k1tacyQ5u0AAAAMd2FuZ2JpbkA0MDkwAQIDBAUGBw==\n-----END OPENSSH PRIVATE KEY-----\n"
+	},
+	{
+		"secret_type": "AWS Access Key ID",
+		"known_key_fake": "AKIA6JPIPW7QDHGGKQWU:188Id0sy64wflW1tFY/G+Vp8/dDJypKKMtbCY1Cb"
+	},
+	{
+		"secret_type": "Redis Connection String",
+		"known_key_fake": "redis://:TestPass124!@219.223.206.186:6380/0"
+	},
+	{
+		"secret_type": "GitHub Personal Access Token",
+		"known_key_fake": "ghp_T30p6KMUiyP0PtW7ZGwrorKieq0D3139T6m1"
+	},
+	{
+		"secret_type": "Sentry DSN",
+		"known_key_fake": "https://2f0d5790009a48d545ecdd4f74fb197b@o4510736752312320.ingest.us.sentry.io/4510736758931455"
+	}
+]

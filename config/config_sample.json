@@ -1,0 +1,38 @@
+{
+  "api_key": "YOUR_LLM_API_KEY",
+  "base_url": "YOUR_LLM_BASE_URL",
+  "output_dir": "output_sample",
+  "add_noise": false,
+  "items": [
+    {
+    "secret": "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",
+    "secret_type": "OpenAI API Key",
+    "modality": "image"
+  },
+  {
+    "secret": "postgresql://testuser1:TestPass123!@219.223.206.186:5433/testdb",
+    "secret_type": "Database Connection String",
+    "modality": "video"
+  },
+  {
+    "secret": "redis://:TestPass124!@219.223.206.186:6380/0",
+    "secret_type": "Redis Connection String",
+    "modality": "audio"
+  },
+  {
+    "secret": "AKIA6JPIPW7QDHGGKQWU:188Id0sy64wflW1tFY/G+Vp8/dDJypKKMtbCY1Cb",
+    "secret_type": "AWS Access Key ID",
+    "modality": "pdf"
+  },
+  {
+    "secret": "ghp_T30p6KMUiyP0PtW7ZGwrorKieq0D3139T6m1",
+    "secret_type": "GitHub Personal Access Token",
+    "modality": "word"
+  },
+  {
+    "secret": "mongodb://testuser:TestPass124!@219.223.206.186:27018/?authSource=admin",
+    "secret_type": "MongoDB Connection String",
+    "modality": "ppt"
+  }
+  ]
+}
