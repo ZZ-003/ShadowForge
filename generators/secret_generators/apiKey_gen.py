@@ -4,10 +4,11 @@ from enum import Enum
 
 class Platform(Enum):
     OpenAI_Personal = 1
-    DeepSeek        = 2
+    Deepseek        = 2
     BaiLian         = 3     #Aliyun
     OpenAI_Project  = 4     #To do
     Moonshot        = 5
+    HuggingFace     = 6
     #To be extended
 
 class KeyRandGen:
@@ -31,6 +32,10 @@ class KeyRandGen:
     def OpenAI_Project_keygen(self) -> str:
         pass
     
+    def HuggingFace_keygen(self) -> str:
+        randset=string.ascii_letters
+        payload:str=''.join(secrets.choice(randset) for _ in range(34))
+        return 'hf_'+payload
 
 def keygen(modeset:int) -> str:
     Generator=KeyRandGen()
@@ -39,9 +44,17 @@ def keygen(modeset:int) -> str:
             return Generator.OpenAI_Personal_keygen()
         case Platform.Deepseek:
             return Generator.Deepseek.keygen()
-        case Platform.Bailian:
+        case Platform.BaiLian:
             return Generator.Balian_keygen()
         case Platform.Moonshot:
             return Generator.Moonshot_keygen()
         case Platform.OpenAI_Project:
             pass
+        case Platform.HuggingFace:
+            return Generator.HuggingFace_keygen()
+        
+# Test Only
+if __name__ == "__main__":
+    print("mode: ",end='')
+    mode=int(input())
+    print(keygen(mode))
