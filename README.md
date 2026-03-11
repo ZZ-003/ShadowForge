@@ -29,6 +29,8 @@ universe_gen_scripts/
 │   ├── config.json      # 实际运行配置（脚本读取此文件）
 │   └── config_sample.json # 配置模板
 ├── generators/          # 各模态的具体生成器模块
+│   ├── secret_generators
+│       └── apiKey_gen.py   #生成伪造LLM平台密钥 
 │   ├── __init__.py
 │   ├── vscode_gen.py    # 生成 IDE 代码截图 (Python/JS/Java)
 │   ├── cli_gen.py       # 生成终端命令行截图
@@ -150,3 +152,7 @@ python main.py --config config/config_sample.json
 通过 `config/config.json` 中的 `add_noise` 字段控制是否为图片场景添加轻微噪声；
 2. LLM 内容生成篇幅限制
 在向 LLM 发送生成请求时，增加了对上下文篇幅的严格限制，确保生成的内容长度维持在密钥（Secret）长度的 2-3 倍 左右。
+
+
+## 关于秘密生成器
+1.每种秘密都单独具有其生成器，可按需从目录下import对应的生成函数，用于批量生成随机伪秘密用于模拟真实状态下秘密多样性
