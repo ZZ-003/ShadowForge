@@ -30,7 +30,8 @@ universe_gen_scripts/
 │   └── config_sample.json # 配置模板
 ├── generators/          # 各模态的具体生成器模块
 │   ├── secret_generators
-│       └── apiKey_gen.py   #生成伪造LLM平台密钥 
+│       ├── apiKey_gen.py   #生成伪造LLM平台密钥 
+│       └── NetworkStr_Gen.py #生成数据库等访问链接
 │   ├── __init__.py
 │   ├── vscode_gen.py    # 生成 IDE 代码截图 (Python/JS/Java)
 │   ├── cli_gen.py       # 生成终端命令行截图
