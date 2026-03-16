@@ -30,7 +30,8 @@ universe_gen_scripts/
 │   └── config_sample.json # 配置模板
 ├── generators/          # 各模态的具体生成器模块
 │   ├── secret_generators
-│       ├── apiKey_gen.py   #生成伪造LLM平台密钥 
+│       ├── Key_gen.py   #生成伪造的平台连接密钥 
+│       ├── secret_gen.py #生成器封装部分，为两类生成提供简单外部接口
 │       └── NetworkStr_Gen.py #生成数据库等访问链接
 │   ├── __init__.py
 │   ├── vscode_gen.py    # 生成 IDE 代码截图 (Python/JS/Java)
@@ -73,7 +74,7 @@ universe_gen_scripts/
 
 ```bash
 # Python 依赖
-pip install openai pillow opencv-python numpy gtts pyttsx3 reportlab python-docx python-pptx requests
+pip install openai pillow opencv-python numpy gtts pyttsx3 reportlab python-docx python-pptx requests sshkey-tools
 
 # 系统依赖 (Linux)
 # 用于离线音频生成
@@ -156,4 +157,13 @@ python main.py --config config/config_sample.json
 
 
 ## 关于秘密生成器
-1.每种秘密都单独具有其生成器，可按需从目录下import对应的生成函数，用于批量生成随机伪秘密用于模拟真实状态下秘密多样性
+接口请使用/generator/secret_generator/secret_gen.py中所述
+Keygen()为密钥生成器接口
+Strgen()为链接串生成器接口
+以上两者均使用唯一输入modeset:int指示目标类型
+三种Rand接口无输入参数
+RandKeygen() ~
+RandStrgen() ~
+AllRandgen   -生成器类型和目标类型全随机
+支持目标类型见/config/key_sample.json
+所属生成器类型见secret_generator目录下_Gen后缀python文件内枚举类
