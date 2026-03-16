@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=sqlite:///./shadowforge.db
+      - DEBUG=true
+      - SECRET_KEY=dev-secret-key-change-in-production
+      - LLM_API_KEY=${LLM_API_KEY:-your-llm-api-key}
+      - LLM_BASE_URL=https://api.deepseek.com
+      - LLM_MODEL=qwen3.5-plus
+      - CORS_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+    volumes:
+      - ./backend:/app
+      - ./outputs:/app/outputs
+    working_dir: /app
+    command: python -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000/api
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    working_dir: /app
+    command: npm run dev
+    depends_on:
+      - backend
+
+volumes:
+  node_modules:

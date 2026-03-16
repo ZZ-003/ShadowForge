@@ -31,7 +31,7 @@ def analyze_secret(client, secret_type):
     
     try:
         response = client.chat.completions.create(
-            model="gpt-4o", # Or whatever model fits, usually gpt-3.5-turbo or gpt-4 works
+            model="deepseek-chat", # Or whatever model fits, usually gpt-3.5-turbo or gpt-4 works
             messages=[
                 {"role": "system", "content": "You are a security expert analyzing secret leaks."},
                 {"role": "user", "content": prompt}
@@ -241,7 +241,7 @@ def generate_content(client, secret_type, scenario, secret_placeholder="SECRET_H
         response_format = {"type": "json_object"} if scenario in ["cli", "chat", "ui", "ppt"] else None
         
         response = client.chat.completions.create(
-            model="gpt-4o",
+            model="deepseek-chat",
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt}

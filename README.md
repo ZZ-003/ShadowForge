@@ -30,7 +30,7 @@ universe_gen_scripts/
 │   └── config_sample.json # 配置模板
 ├── generators/          # 各模态的具体生成器模块
 │   ├── secret_generators
-│       ├── Key_gen.py   #生成伪造的平台连接密钥 
+│       ├── Key_Gen.py   #生成伪造的平台连接密钥 
 │       ├── secret_gen.py #生成器封装部分，为两类生成提供简单外部接口
 │       └── NetworkStr_Gen.py #生成数据库等访问链接
 │   ├── __init__.py
@@ -164,6 +164,6 @@ Strgen()为链接串生成器接口
 三种Rand接口无输入参数
 RandKeygen() ~
 RandStrgen() ~
-AllRandgen   -生成器类型和目标类型全随机
+AllRandgen()   -生成器类型和目标类型全随机
 支持目标类型见/config/key_sample.json
 所属生成器类型见secret_generator目录下_Gen后缀python文件内枚举类
