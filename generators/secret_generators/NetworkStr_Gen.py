@@ -59,3 +59,21 @@ class NetworkStr_Gen:
         cstr=baseprefix+tokenA+'@o'+org_id+basemid+proj_id
         return cstr
 
+def NetworkGen(modeset:int) -> str:
+    Generator=NetworkStr_Gen()
+    match Strtype(modeset):
+        case Strtype.PostgreSQL:
+            return Generator.PostgreSQL_Gen()
+        case Strtype.MySQL:
+            return Generator.MySQL_Gen()
+        case Strtype.MongoDB:
+            return Generator.Mongo_Gen()
+        case Strtype.HTTPAuth:
+            return Generator.HTTPAuth_Gen()
+        case Strtype.Redis:
+            return Generator.Redis_Gen()
+        case Strtype.Sentry:
+            return Generator.Sentry_Gen()
+        case _:
+            raise ValueError('Invalid String Type Index')
+        

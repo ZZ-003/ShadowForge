@@ -1,6 +1,7 @@
 import secrets
 import string
 from enum import Enum
+from sshkey_tools.keys import Ed25519PrivateKey
 
 class Platform(Enum):
     OpenAI_Personal = 1
@@ -57,11 +58,10 @@ class APIKeyRandGen:
         return keystr
     
     def OpenSSH_keygen(self) -> str:
-        prefix:str='-----BEGIN OPENSSH PRIVATE KEY-----\n'
-        end='\n-----END OPENSSH PRIVATE KEY-----\n'
-        keystr=''
-        return keystr
-        
+        priv=Ed25519PrivateKey.generate()
+        privstr:str=priv.to_string()
+        return privstr
+        #Requirement:sshkey-tools
 
 
 
@@ -86,6 +86,7 @@ def APIkeygen(modeset:int) -> str:
             return Generator.AWSAccess_keygen()
         case Platform.Github:
             return Generator.Github_keygen()
-        case default:
+        case Platform.OpenSSH:
+            return Generator.OpenSSH_keygen()
+        case _:
             raise ValueError('Invalid Platform Index')
-        
