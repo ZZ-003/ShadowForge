@@ -1,16 +1,21 @@
 import secrets
 import string
 from enum import Enum
+from sshkey_tools.keys import Ed25519PrivateKey
 
 class Platform(Enum):
     OpenAI_Personal = 1
-    DeepSeek        = 2
-    BaiLian         = 3     #Aliyun
+    Deepseek        = 2
+    Bailian         = 3     #Aliyun
     OpenAI_Project  = 4     #To do
     Moonshot        = 5
+    HuggingFace     = 6
+    AWSAccess       = 7
+    Github          = 8
+    OpenSSH         = 9
     #To be extended
 
-class KeyRandGen:
+class APIKeyRandGen:
     
     def Deepseek_keygen(self) -> str :
         return 'sk-'+secrets.token_hex(16)
@@ -29,19 +34,59 @@ class KeyRandGen:
         return 'sk-'+payload
 
     def OpenAI_Project_keygen(self) -> str:
-        pass
+        return ''
     
+    def HuggingFace_keygen(self) -> str:
+        randset=string.ascii_letters
+        payload:str=''.join(secrets.choice(randset) for _ in range(34))
+        return 'hf_'+payload
 
-def keygen(modeset:int) -> str:
-    Generator=KeyRandGen()
+    def AWSAccess_keygen(self) -> str:
+        randset0=string.ascii_uppercase+ string.digits
+        randpreset=['AKIA','ASIA','ABIA','ACCA','AGPA']
+        randkeyset=string.ascii_letters+string.digits+'/+='
+        prefix1=secrets.choice(randpreset)
+        prefix2=''.join(secrets.choice(randset0) for _ in range(16))
+        keystr:str=prefix1+prefix2+''.join(secrets.choice(randkeyset) for _ in range(40))
+        return keystr
+    
+    def Github_keygen(self) -> str:
+        prefix:str='ghp+'
+        randset=string.ascii_letters+string.digits
+        payload:str=''.join(secrets.choice(randset) for _ in range(36))
+        keystr:str=prefix+payload
+        return keystr
+    
+    def OpenSSH_keygen(self) -> str:
+        priv=Ed25519PrivateKey.generate()
+        privstr:str=priv.to_string()
+        return privstr
+        #Requirement:sshkey-tools
+
+
+
+
+
+def APIkeygen(modeset:int) -> str:
+    Generator=APIKeyRandGen()
     match Platform(modeset):
         case Platform.OpenAI_Personal:
             return Generator.OpenAI_Personal_keygen()
         case Platform.Deepseek:
-            return Generator.Deepseek.keygen()
+            return Generator.Deepseek_keygen()
         case Platform.Bailian:
-            return Generator.Balian_keygen()
+            return Generator.Bailian_keygen()
         case Platform.Moonshot:
             return Generator.Moonshot_keygen()
         case Platform.OpenAI_Project:
-            pass
+            return Generator.OpenAI_Project_keygen()
+        case Platform.HuggingFace:
+            return Generator.HuggingFace_keygen()
+        case Platform.AWSAccess:
+            return Generator.AWSAccess_keygen()
+        case Platform.Github:
+            return Generator.Github_keygen()
+        case Platform.OpenSSH:
+            return Generator.OpenSSH_keygen()
+        case _:
+            raise ValueError('Invalid Platform Index')
