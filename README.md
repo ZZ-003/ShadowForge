@@ -179,7 +179,7 @@ class Platform(Enum):
     OpenSSH         = 9
 ```
 分别格式如下:
-
+```
 OpenAI_Personal : sk-{48个字母数字混合，不限制大小写}
 Deepseek        : sk-{16byte Hex值，返回为小写}
 Bailian         : 同Deepseek
@@ -189,7 +189,7 @@ HuggingFace     : hf_{34字符的字母，不限制大小写}
 AWSAccess       : {4字符大写字母前缀}{16字符大写字母与数字}{40字符base64字符}
 Github          : ghp+{36字符字母数字混合，不限制大小写}
 OpenSSH         : 标准OpenSSH Private Key格式 #协议生成，务必保证本地包依赖环境完整#
-
+```
 RandKeygen() -> str : 密钥类秘密随机生成接口，无需手动指定目标类型
 *请调用端做空串处理*
 
@@ -206,14 +206,14 @@ class Strtype(Enum):
     Sentry=6
 ```
 分别格式如下：
-
+```
 PostgreSQL      : postgresql://{username}:{pwd}@{ipv4_addr}:{port_idx}/{dbname}
 MySQL           : jdbc:mysql://{ipvr_addr}:{port_idx}/{dbname}?user={username}&password={pwd}!
 MongoDB         : mongodb://{username}:{pwd}!@{ipv4_addr}:{port_idx}/?authSource={source, e.g. admin}
 HTTPAuth        : http://{username}:{pwd}!@{ipv4_addr}:8080
 Redis           : redis://:{pwd}!@{ipv4_addr}:{port_idx}/0
 Sentry DSN      : http://{16byte Hex Token}@o{16len numbers}.ingest.us.sentry.io/{16len numbers}
-
+```
 RandStrgen() -> str : 网络串秘密随机生成接口，无需手动指定目标类型
 
 #### 外封装
