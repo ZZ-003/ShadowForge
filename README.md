@@ -156,14 +156,66 @@ python main.py --config config/config_sample.json
 在向 LLM 发送生成请求时，增加了对上下文篇幅的严格限制，确保生成的内容长度维持在密钥（Secret）长度的 2-3 倍 左右。
 
 
-## 关于秘密生成器
-接口请使用/generator/secret_generator/secret_gen.py中所述
-Keygen()为密钥生成器接口
-Strgen()为链接串生成器接口
-以上两者均使用唯一输入modeset:int指示目标类型
-三种Rand接口无输入参数
-RandKeygen() ~
-RandStrgen() ~
-AllRandgen()   -生成器类型和目标类型全随机
-支持目标类型见/config/key_sample.json
-所属生成器类型见secret_generator目录下_Gen后缀python文件内枚举类
+## 秘密生成器
+
+### 接口
+
+使用请import /generator/secret_generator/下*secret_gen.py*
+
+#### 密钥类
+
+Keygen(modeset:int) -> str  ：密钥类秘密的基础生成接口，
+需要手动通过指定modeset值规定目标类型，现框架内类型如下:
+``` python
+class Platform(Enum):
+    OpenAI_Personal = 1
+    Deepseek        = 2
+    Bailian         = 3     #Aliyun
+    OpenAI_Project  = 4     # ***Unimplemented***
+    Moonshot        = 5
+    HuggingFace     = 6
+    AWSAccess       = 7
+    Github          = 8
+    OpenSSH         = 9
+```
+分别格式如下:
+
+OpenAI_Personal : sk-{48个字母数字混合，不限制大小写}
+Deepseek        : sk-{16byte Hex值，返回为小写}
+Bailian         : 同Deepseek
+OpenAI_Project  : 无参考文档，此处略 ##注意，实现暂时留空，返回为空值##
+Moonshot        : 同OpenAI_Personal
+HuggingFace     : hf_{34字符的字母，不限制大小写}
+AWSAccess       : {4字符大写字母前缀}{16字符大写字母与数字}{40字符base64字符}
+Github          : ghp+{36字符字母数字混合，不限制大小写}
+OpenSSH         : 标准OpenSSH Private Key格式 #协议生成，务必保证本地包依赖环境完整#
+
+RandKeygen() -> str : 密钥类秘密随机生成接口，无需手动指定目标类型
+*请调用端做空串处理*
+
+#### 网络串类
+
+Strgen(modeset:int) -> str : 网络串秘密基础生成接口，须手动指定目标模式，支持类型如下:
+``` python
+class Strtype(Enum):
+    PostgreSQL=1
+    MySQL=2
+    MongoDB=3
+    HTTPAuth=4
+    Redis=5
+    Sentry=6
+```
+分别格式如下：
+
+PostgreSQL      : postgresql://{username}:{pwd}@{ipv4_addr}:{port_idx}/{dbname}
+MySQL           : jdbc:mysql://{ipvr_addr}:{port_idx}/{dbname}?user={username}&password={pwd}!
+MongoDB         : mongodb://{username}:{pwd}!@{ipv4_addr}:{port_idx}/?authSource={source, e.g. admin}
+HTTPAuth        : http://{username}:{pwd}!@{ipv4_addr}:8080
+Redis           : redis://:{pwd}!@{ipv4_addr}:{port_idx}/0
+Sentry DSN      : http://{16byte Hex Token}@o{16len numbers}.ingest.us.sentry.io/{16len numbers}
+
+RandStrgen() -> str : 网络串秘密随机生成接口，无需手动指定目标类型
+
+#### 外封装
+
+AllRandgen() -> str : 随机选择生成类型且随机选择目标类型
