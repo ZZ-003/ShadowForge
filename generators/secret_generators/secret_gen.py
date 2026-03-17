@@ -25,6 +25,6 @@ def AllRandgen() -> str:
             return RandKeygen()
         case 1:
             return RandStrgen()
-        case default:
+        case _:
             raise ValueError('Unexpected Modeset Insertion')
         
