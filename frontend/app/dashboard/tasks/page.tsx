@@ -35,7 +35,7 @@ export default function TasksPage() {
   };
 
   const handleDelete = async (taskId: number) => {
-    if (!confirm('确定要删除这个任务吗？')) {
+    if (!confirm('确定要删除这个任务及其所有文件吗？')) {
       return;
     }
 
@@ -44,6 +44,7 @@ export default function TasksPage() {
       setTasks(tasks.filter(t => t.id !== taskId));
     } catch (error: any) {
       console.error('Failed to delete task:', error);
+      alert('删除失败：' + error.message);
     }
   };
 
@@ -196,16 +197,6 @@ export default function TasksPage() {
                     </td>
                     <td className="p-4 text-right">
                       <div className="flex items-center justify-end gap-2">
-                        <Link
-                          href={`/dashboard/tasks/${task.id}`}
-                          className="p-2 rounded-lg hover:bg-cyber-blue/10 transition-colors"
-                          title="查看详情"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.272 4.057-1.272 7H15V12z" />
-                          </svg>
-                        </Link>
                         <button
                           onClick={() => handleDelete(task.id)}
                           className="p-2 rounded-lg hover:bg-red-500/10 text-gray-400 hover:text-red-500 transition-colors"
@@ -239,10 +230,11 @@ export default function TasksPage() {
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
-            创建第一个任务
+            创建新任务
           </Link>
         </div>
       )}
+
     </div>
   );
 }

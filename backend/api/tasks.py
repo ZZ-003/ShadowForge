@@ -9,6 +9,7 @@ from models.task import Task, TaskStatus, TaskModality, TaskScene
 from models.user import User
 from core.auth import get_current_active_user
 from core.task_runner import run_task_async
+from core.file_manager import FileManager
 import asyncio
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
@@ -274,7 +275,7 @@ async def delete_task(
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
-    """删除任务"""
+    """删除任务及其所有文件"""
     task = db.query(Task).filter(
         Task.id == task_id,
         Task.user_id == current_user.id
@@ -283,6 +284,11 @@ async def delete_task(
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
 
+    # 删除任务关联的所有文件
+    file_manager = FileManager(db)
+    file_manager.delete_task_files(task_id, current_user.id)
+
+    # 删除数据库中的任务记录
     db.delete(task)
     db.commit()
 

@@ -24,21 +24,11 @@ export default function HomePage() {
             transition={{ duration: 0.8 }}
           >
             <div className="inline-flex items-center gap-3">
-              <div className="w-14 h-14 bg-gradient-to-br from-cyber-blue to-cyber-purple rounded-lg flex items-center justify-center shadow-lg shadow-cyber-blue/30">
-                <svg
-                  className="w-10 h-10 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 2L2 7l10 5 10-5-10 5M2 17l10 5 10-5M12 22V2"
-                  />
-                </svg>
-              </div>
+              <img
+                src="/logo.png"
+                alt="ShadowForge"
+                className="w-14 h-14 rounded-lg shadow-lg shadow-cyber-blue/30 object-cover"
+              />
               <h1 className="text-6xl md:text-7xl font-bold text-gradient drop-shadow-2xl">
                 DeepTrace
               </h1>
