@@ -4,12 +4,15 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '@/lib/store/auth';
-import { getTasks, deleteTask, TaskStatus } from '@/lib/api/tasks';
+import { getTasks, deleteTask, deleteTasksBatch, TaskStatus, BatchDeleteResponse } from '@/lib/api/tasks';
 
 export default function TasksPage() {
   const [tasks, setTasks] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState<TaskStatus | null>(null);
+  const [selectedTasks, setSelectedTasks] = useState<Set<number>>(new Set());
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteResult, setDeleteResult] = useState<BatchDeleteResponse | null>(null);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   useEffect(() => {
@@ -34,6 +37,41 @@ export default function TasksPage() {
     }
   };
 
+  // 处理单个任务选择
+  const handleSelectTask = (taskId: number) => {
+    const newSelected = new Set(selectedTasks);
+    if (newSelected.has(taskId)) {
+      newSelected.delete(taskId);
+    } else {
+      newSelected.add(taskId);
+    }
+    setSelectedTasks(newSelected);
+    setDeleteResult(null);
+  };
+
+  // 全选/反选
+  const handleSelectAll = () => {
+    if (selectedTasks.size === filteredTasks.length) {
+      setSelectedTasks(new Set());
+    } else {
+      setSelectedTasks(new Set(filteredTasks.map(t => t.id)));
+    }
+    setDeleteResult(null);
+  };
+
+  // 反选
+  const handleInvertSelection = () => {
+    const newSelected = new Set<number>();
+    filteredTasks.forEach(task => {
+      if (!selectedTasks.has(task.id)) {
+        newSelected.add(task.id);
+      }
+    });
+    setSelectedTasks(newSelected);
+    setDeleteResult(null);
+  };
+
+  // 处理单个删除
   const handleDelete = async (taskId: number) => {
     if (!confirm('确定要删除这个任务及其所有文件吗？')) {
       return;
@@ -42,11 +80,54 @@ export default function TasksPage() {
     try {
       await deleteTask(taskId);
       setTasks(tasks.filter(t => t.id !== taskId));
+      setSelectedTasks(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(taskId);
+        return newSet;
+      });
     } catch (error: any) {
       console.error('Failed to delete task:', error);
       alert('删除失败：' + error.message);
     }
   };
+
+  // 处理批量删除
+  const handleBatchDelete = async () => {
+    if (selectedTasks.size === 0) {
+      return;
+    }
+
+    const count = selectedTasks.size;
+    if (!confirm(`确定要删除选中的 ${count} 个任务及其所有文件吗？`)) {
+      return;
+    }
+
+    setIsDeleting(true);
+    setDeleteResult(null);
+
+    try {
+      const response = await deleteTasksBatch(Array.from(selectedTasks));
+      setDeleteResult(response);
+
+      // 从列表中移除已删除的任务
+      setTasks(prevTasks => 
+        prevTasks.filter(t => !response.deleted_tasks.includes(t.id))
+      );
+
+      // 清空选择
+      setSelectedTasks(new Set());
+    } catch (error: any) {
+      console.error('Failed to batch delete tasks:', error);
+      alert('批量删除失败：' + error.message);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  // 获取筛选后的任务列表
+  const filteredTasks = filter 
+    ? tasks.filter(t => t.status === filter)
+    : tasks;
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -82,6 +163,71 @@ export default function TasksPage() {
     }
   };
 
+  // 渲染批量删除结果
+  const renderDeleteResult = () => {
+    if (!deleteResult) return null;
+
+    const successCount = deleteResult.success_count;
+    const failedCount = deleteResult.failed_count;
+
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="cyber-card space-y-4"
+      >
+        <h2 className="text-lg font-semibold text-cyber-blue">批量删除结果</h2>
+        
+        {/* 统计信息 */}
+        <div className="grid grid-cols-3 gap-4">
+          <div className="p-4 bg-green-500/20 border border-green-500/30 rounded-lg">
+            <div className="text-2xl font-bold text-green-400">{successCount}</div>
+            <div className="text-sm text-gray-400">成功删除</div>
+          </div>
+          <div className="p-4 bg-red-500/20 border border-red-500/30 rounded-lg">
+            <div className="text-2xl font-bold text-red-400">{failedCount}</div>
+            <div className="text-sm text-gray-400">失败</div>
+          </div>
+          <div className="p-4 bg-cyber-blue/20 border border-cyber-blue/30 rounded-lg">
+            <div className="text-2xl font-bold text-cyber-blue">{successCount + failedCount}</div>
+            <div className="text-sm text-gray-400">总计</div>
+          </div>
+        </div>
+
+        {/* 失败详情 */}
+        {failedCount > 0 && (
+          <div className="space-y-2">
+            <h3 className="font-medium text-red-400">失败详情：</h3>
+            {deleteResult.errors.map((error, index) => (
+              <div key={index} className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-sm">
+                <span className="text-red-400">错误:</span> {error}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* 操作按钮 */}
+        <div className="flex gap-3 pt-4">
+          <button
+            onClick={() => {
+              setDeleteResult(null);
+              loadTasks();
+            }}
+            className="cyber-button px-6 py-2 inline-flex items-center gap-2 bg-green-500/20 text-green-400 border border-green-500/30 hover:bg-green-500/30"
+          >
+            刷新列表
+          </button>
+          <Link
+            href="/dashboard/tasks/new"
+            className="cyber-button px-6 py-2 inline-flex items-center gap-2 bg-cyber-dark text-gray-300 border border-cyber-blue/20 hover:bg-cyber-blue/10"
+          >
+            创建新任务
+          </Link>
+        </div>
+      </motion.div>
+    );
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -109,6 +255,9 @@ export default function TasksPage() {
         </Link>
       </div>
 
+      {/* 批量删除结果 */}
+      {deleteResult && renderDeleteResult()}
+
       {/* 筛选器 */}
       <div className="cyber-card">
         <div className="flex flex-wrap gap-2">
@@ -129,12 +278,59 @@ export default function TasksPage() {
       </div>
 
       {/* 任务列表 */}
-      {tasks.length > 0 ? (
+      {filteredTasks.length > 0 ? (
         <div className="cyber-card overflow-hidden">
+          {/* 顶部工具栏 - 显示选中数量和批量操作按钮 */}
+          {selectedTasks.size > 0 && (
+            <div className="p-4 bg-cyber-blue/10 border-b border-cyber-blue/20 flex flex-wrap gap-4 items-center justify-between">
+              <div className="flex items-center gap-4">
+                <span className="text-cyber-blue font-medium">
+                  已选择 {selectedTasks.size} 个任务
+                </span>
+                <button
+                  onClick={handleInvertSelection}
+                  className="text-sm text-gray-400 hover:text-cyber-blue transition-colors"
+                >
+                  反选
+                </button>
+              </div>
+              <button
+                onClick={handleBatchDelete}
+                disabled={isDeleting}
+                className="px-4 py-2 bg-red-500/20 text-red-400 border border-red-500/30 rounded-lg hover:bg-red-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                {isDeleting ? (
+                  <>
+                    <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    删除中...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    批量删除
+                  </>
+                )}
+              </button>
+            </div>
+          )}
+
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-cyber-blue/20">
+                  <th className="text-center p-4 w-12">
+                    <input
+                      type="checkbox"
+                      checked={filteredTasks.length > 0 && selectedTasks.size === filteredTasks.length}
+                      onChange={handleSelectAll}
+                      className="w-4 h-4 rounded border-cyber-blue bg-cyber-dark text-cyber-blue focus:ring-cyber-blue"
+                    />
+                  </th>
                   <th className="text-left p-4 font-semibold text-gray-300">名称</th>
                   <th className="text-left p-4 font-semibold text-gray-300">类型</th>
                   <th className="text-left p-4 font-semibold text-gray-300">模态</th>
@@ -145,14 +341,24 @@ export default function TasksPage() {
                 </tr>
               </thead>
               <tbody>
-                {tasks.map((task, index) => (
+                {filteredTasks.map((task, index) => (
                   <motion.tr
                     key={task.id}
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.05, duration: 0.3 }}
-                    className="border-b border-cyber-blue/10 hover:bg-cyber-blue/5 transition-colors"
+                    className={`border-b border-cyber-blue/10 hover:bg-cyber-blue/5 transition-colors ${
+                      selectedTasks.has(task.id) ? 'bg-cyber-blue/10' : ''
+                    }`}
                   >
+                    <td className="p-4 text-center">
+                      <input
+                        type="checkbox"
+                        checked={selectedTasks.has(task.id)}
+                        onChange={() => handleSelectTask(task.id)}
+                        className="w-4 h-4 rounded border-cyber-blue bg-cyber-dark text-cyber-blue focus:ring-cyber-blue"
+                      />
+                    </td>
                     <td className="p-4">
                       <div className="flex items-center gap-3">
                         <Link
@@ -213,6 +419,18 @@ export default function TasksPage() {
               </tbody>
             </table>
           </div>
+
+          {/* 底部全选提示 */}
+          {selectedTasks.size > 0 && selectedTasks.size < filteredTasks.length && (
+            <div className="p-3 bg-cyber-dark/50 border-t border-cyber-blue/10 text-center">
+              <button
+                onClick={handleSelectAll}
+                className="text-sm text-cyber-blue hover:text-cyber-blue/80 transition-colors"
+              >
+                全选本页 {filteredTasks.length} 个任务
+              </button>
+            </div>
+          )}
         </div>
       ) : (
         <div className="cyber-card text-center py-12">
@@ -234,7 +452,6 @@ export default function TasksPage() {
           </Link>
         </div>
       )}
-
     </div>
   );
 }
