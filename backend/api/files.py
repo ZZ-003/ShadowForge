@@ -60,19 +60,22 @@ async def get_task_files(
     return files
 
 
-@router.get("/preview/{file_path:path}")
+from typing import Optional
+from fastapi import Query
+
+@router.get("/preview")
 async def preview_file(
-    file_path: str,
+    path: str = Query(..., description="File path to preview"),
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
     """预览文件"""
     file_manager = FileManager(db)
 
-    # 验证文件访问权限
-    file_info = file_manager.get_file_info(file_path, current_user.id)
+    # 验证文件访问权限 - 使用 int() 转换 user_id
+    file_info = file_manager.get_file_info(path, int(current_user.id))
 
-    if not os.path.exists(file_path):
+    if not os.path.exists(path):
         raise HTTPException(status_code=404, detail="File not found")
 
     # 根据文件类型返回不同的响应
@@ -80,35 +83,35 @@ async def preview_file(
 
     if file_type == "image":
         return FileResponse(
-            file_path,
-            media_type="image/png",
-            filename=os.path.basename(file_path)
+            path,
+            media_type=f"image/{os.path.splitext(path)[1][1:]}",
+            filename=os.path.basename(path)
         )
     elif file_type == "video":
         return FileResponse(
-            file_path,
-            media_type="video/mp4",
-            filename=os.path.basename(file_path),
+            path,
+            media_type=f"video/{os.path.splitext(path)[1][1:]}",
+            filename=os.path.basename(path),
             headers={"Accept-Ranges": "bytes"}
         )
     elif file_type == "audio":
         return FileResponse(
-            file_path,
-            media_type="audio/mpeg",
-            filename=os.path.basename(file_path)
+            path,
+            media_type=f"audio/{os.path.splitext(path)[1][1:]}",
+            filename=os.path.basename(path)
         )
     elif file_type == "pdf":
         return FileResponse(
-            file_path,
+            path,
             media_type="application/pdf",
-            filename=os.path.basename(file_path)
+            filename=os.path.basename(path)
         )
     else:
         # 对于其他文件类型，返回下载
         return FileResponse(
-            file_path,
+            path,
             media_type="application/octet-stream",
-            filename=os.path.basename(file_path)
+            filename=os.path.basename(path)
         )
 
 

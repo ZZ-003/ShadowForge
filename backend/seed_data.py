@@ -89,7 +89,7 @@ PREDEFINED_TEMPLATES = [
             "secret_type": "Secret Key",
             "modality": "pdf",
             "scene": "pdf",
-            "example_secret": "sk_****************************"
+            "example_secret": "sk_live_*****"
         }
     },
     {

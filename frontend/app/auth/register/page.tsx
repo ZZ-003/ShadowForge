@@ -112,21 +112,11 @@ export default function RegisterPage() {
         {/* Logo */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-cyber-blue to-cyber-purple rounded-lg flex items-center justify-center">
-              <svg
-                className="w-8 h-8 text-white"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 2L2 7l10 5 10-5-10 5M2 17l10 5 10-5M12 22V2"
-                />
-              </svg>
-            </div>
+            <img
+              src="/logo.png"
+              alt="ShadowForge"
+              className="w-12 h-12 rounded-lg object-cover"
+            />
             <span className="text-2xl font-bold text-gradient">DeepTrace</span>
           </Link>
         </div>

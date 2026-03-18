@@ -73,3 +73,84 @@ class Task(Base):
 # 注意：需要在应用启动后设置关系
 # from models.user import User
 # User.tasks = relationship("Task", order_by=Task.id, back_populates="user")
+
+
+# ============================================================================
+# Pydantic 模型 - 用于批量操作的请求/响应
+# ============================================================================
+
+from pydantic import BaseModel
+from typing import List, Optional, Dict, Any
+from datetime import datetime
+
+
+class CommonTaskConfig(BaseModel):
+    """公共任务配置"""
+    name_prefix: str = ""
+    secret_type: str
+    modality: str
+    scene: Optional[str] = None
+    description: Optional[str] = None
+    
+    model_config = {
+        "populate_by_name": True,  # 支持别名和原始字段名
+        "arbitrary_types_allowed": True,
+    }
+
+
+class BatchTaskCreate(BaseModel):
+    """批量创建任务请求"""
+    secrets: List[str]
+    common_config: CommonTaskConfig
+    
+    model_config = {
+        "populate_by_name": True,  # 支持别名和原始字段名
+        "arbitrary_types_allowed": True,
+    }
+
+
+class BatchTaskResult(BaseModel):
+    """批量创建结果项"""
+    success: bool
+    task: Optional[Dict[str, Any]] = None
+    error: Optional[str] = None
+    
+    model_config = {
+        "populate_by_name": True,
+        "arbitrary_types_allowed": True,
+    }
+
+
+class BatchTaskResponse(BaseModel):
+    """批量创建任务响应"""
+    success_count: int
+    failed_count: int
+    results: List[BatchTaskResult]
+    
+    model_config = {
+        "populate_by_name": True,
+        "arbitrary_types_allowed": True,
+    }
+
+
+class BatchDeleteRequest(BaseModel):
+    """批量删除请求"""
+    task_ids: List[int]
+    
+    model_config = {
+        "populate_by_name": True,
+        "arbitrary_types_allowed": True,
+    }
+
+
+class BatchDeleteResponse(BaseModel):
+    """批量删除响应"""
+    success_count: int
+    failed_count: int
+    deleted_tasks: List[int]
+    errors: List[str]
+    
+    model_config = {
+        "populate_by_name": True,
+        "arbitrary_types_allowed": True,
+    }

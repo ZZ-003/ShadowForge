@@ -69,21 +69,11 @@ export default function DashboardLayout({
         {/* Logo */}
         <div className="p-4 border-b border-cyber-blue/20">
           <Link href="/dashboard" className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-cyber-blue to-cyber-purple rounded-lg flex items-center justify-center flex-shrink-0">
-              <svg
-                className="w-6 h-6 text-white"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 2L2 7l10 5 10-5-10 5M2 17l10 5 10-5M12 22V2"
-                />
-              </svg>
-            </div>
+            <img
+              src="/logo.png"
+              alt="ShadowForge"
+              className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
+            />
             {sidebarOpen && (
               <span className="text-xl font-bold text-gradient">DeepTrace</span>
             )}

@@ -1,5 +1,6 @@
 import os
 import shutil
+import logging
 from pathlib import Path
 from typing import List, Optional, Tuple
 from fastapi import HTTPException
@@ -8,6 +9,8 @@ from sqlalchemy.orm import Session
 from models.task import Task
 from models.user import User
 from config.settings import settings
+
+logger = logging.getLogger(__name__)
 
 
 class FileManager:
@@ -78,52 +81,71 @@ class FileManager:
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Failed to delete file: {str(e)}")
 
-    def delete_task_files(self, task_id: int, user_id: int) -> bool:
-        """删除任务所有文件"""
+    def delete_task_files(self, task_id: int, user_id: int, commit: bool = True) -> tuple[bool, Optional[str]]:
+        """删除任务所有文件
+        
+        Args:
+            task_id: 任务 ID
+            user_id: 用户 ID
+            commit: 是否立即提交数据库变更（批量操作时设为 False）
+            
+        Returns:
+            (success, error_message) - success 表示是否成功，error_message 是错误信息（如果失败）
+        """
         task = self.db.query(Task).filter(
             Task.id == task_id,
             Task.user_id == user_id
         ).first()
 
         if not task:
-            raise HTTPException(status_code=404, detail="Task not found")
+            return False, f"Task {task_id} not found"
 
         if not task.output_files:
-            return True
+            return True, None
 
         success = True
         for file_path in task.output_files:
             try:
                 if os.path.exists(file_path):
                     os.remove(file_path)
-            except Exception:
+            except Exception as e:
+                logger.warning(f"删除文件 {file_path} 失败：{str(e)}")
                 success = False
 
         # 清空任务的文件列表
         task.output_files = []
-        self.db.commit()
+        
+        if commit:
+            self.db.commit()
 
-        return success
+        return success, None
 
     def get_user_files(self, user_id: int, file_type: Optional[str] = None) -> List[dict]:
-        """获取用户所有文件"""
+        """获取用户所有文件（去重）"""
         user_tasks = self.db.query(Task).filter(
             Task.user_id == user_id,
             Task.output_files.isnot(None)
         ).all()
 
-        files = []
+        # 使用字典去重，key 为 file_path
+        files_dict = {}
         for task in user_tasks:
             for file_path in task.output_files:
                 if os.path.exists(file_path):
                     file_info = self.get_file_info(file_path, user_id)
                     if file_type and file_info["type"] != file_type:
                         continue
-                    file_info["task_id"] = task.id
-                    file_info["task_name"] = task.name
-                    files.append(file_info)
+                    
+                    # 如果文件已存在，更新 task_name 为最新任务的名称
+                    if file_path in files_dict:
+                        files_dict[file_path]["task_name"] = task.name
+                        files_dict[file_path]["task_id"] = task.id
+                    else:
+                        file_info["task_id"] = task.id
+                        file_info["task_name"] = task.name
+                        files_dict[file_path] = file_info
 
-        return files
+        return list(files_dict.values())
 
     def create_download_archive(self, user_id: int, file_paths: List[str]) -> str:
         """创建下载压缩包"""

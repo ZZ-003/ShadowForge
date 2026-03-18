@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 from models.task import Task, TaskStatus
 from config.settings import settings
 
-# 导入ShadowForge适配器
+# 导入 ShadowForge 适配器
 from shadowforge_adapter import generate_from_config_safe, get_generate_from_config
 
 # 延迟导入标志
@@ -27,7 +27,7 @@ except Exception as e:
 
 
 class TaskRunner:
-    """任务运行器，负责执行ShadowForge生成任务"""
+    """任务运行器，负责执行 ShadowForge 生成任务"""
 
     def __init__(self, db: Session, task_id: int):
         self.db = db
@@ -74,25 +74,24 @@ class TaskRunner:
         if not HAS_SHADOWFORGE:
             raise RuntimeError("ShadowForge modules not available")
 
+        # 为每个任务创建独立的子目录，避免文件名冲突
+        task_output_dir = os.path.join(self.output_dir, f"task_{self.task_id}")
+        os.makedirs(task_output_dir, exist_ok=True)
+        
         # 创建配置字典
-        config = self._create_config_dict()
+        config = self._create_config_dict(task_output_dir)
 
         # 定义进度回调函数
         def progress_callback(progress: int, message: str):
             self.task.progress = progress
-            self.task.status_message = message
             self.db.commit()
 
         try:
-            # 确保output_dir不为None
-            if self.output_dir is None:
-                raise ValueError("Output directory not set")
-                
-            # 调用安全的generate_from_config函数
+            # 调用安全的 generate_from_config 函数
             result = generate_from_config_safe(
                 config,
                 progress_callback=progress_callback,
-                output_dir=self.output_dir
+                output_dir=task_output_dir
             )
 
             # 更新任务结果
@@ -103,7 +102,7 @@ class TaskRunner:
                     if os.path.isabs(file_path):
                         absolute_output_files.append(file_path)
                     else:
-                        absolute_output_files.append(os.path.join(self.output_dir, file_path))
+                        absolute_output_files.append(os.path.join(task_output_dir, file_path))
                 self.task.output_files = absolute_output_files
                 self.task.task_metadata = result["metadata"]
             else:
@@ -115,15 +114,16 @@ class TaskRunner:
             self.task.error_message = str(e)
             raise
 
-    def _create_config_dict(self) -> Dict[str, Any]:
+    def _create_config_dict(self, output_dir: str) -> Dict[str, Any]:
         """创建配置字典"""
         return {
             "api_key": settings.llm_api_key or "",
             "base_url": settings.llm_base_url or "",
-            "output_dir": self.output_dir,
+            "output_dir": output_dir,
             "add_noise": False,
             "items": [
                 {
+                    "task_id": self.task_id,
                     "secret": self.task.secret,
                     "secret_type": self.task.secret_type,
                     "modality": self.task.modality.value,

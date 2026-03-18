@@ -163,7 +163,12 @@ def generate_from_config(
                 })
                 continue
 
-            filename_base = f"leak_{item_number:02d}_{scenario}"
+            # 使用 task_id 作为文件名的唯一标识（如果提供）
+            task_id = item.get("task_id")
+            if task_id:
+                filename_base = f"leak_{task_id:04d}_{scenario}"
+            else:
+                filename_base = f"leak_{item_number:02d}_{scenario}"
             output_path = None
 
             # 3. 根据场景生成文件
