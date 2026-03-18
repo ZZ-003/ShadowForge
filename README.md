@@ -1,221 +1,187 @@
-# Universe Gen Scripts (Multimodal Secret Leak Generator)
+# Deeptrace
 
-这是一个多模态秘密泄露场景生成工具，旨在生成包含敏感信息（如 API Key、数据库连接串等）的各种格式文件，用于安全测试、数据集构建或演示。
+[English](README.md) | [中文](README.zh-CN.md)
 
-该工具利用大语言模型（LLM）辅助生成逼真的场景内容，并将其渲染为图片、视频、音频、PDF、Word 或 PPT 等多种模态。
+Deeptrace is a multimodal sensitive-data leak simulation engine that generates realistic synthetic leak artifacts across image, video, audio, and document channels.
 
-## 项目意义与创新点
+The project is designed for security testing, DLP model training, red-team exercises, and awareness programs where real leaked data is either unavailable or too risky to use.
 
-### 1. 核心价值 (Significance)
-*   **填补多模态安全测试空白**: 传统的敏感信息检测（DLP）工具主要针对文本扫描。本项目扩展到了图片（截图）、视频（录屏）、音频（会议录音）及各类办公文档，覆盖了现代企业中更隐蔽的泄露渠道。
-*   **构建高质量训练数据**: 为训练基于视觉或多模态的泄密检测模型提供大规模、高逼真度的合成数据，解决了真实泄露样本稀缺且难以收集的问题。
-*   **提升红蓝对抗真实性**: 在红队演练或安全意识培训中，能够生成高度可信的“伪造”泄露场景（如误发群的密钥截图、演示视频中的 Token），显著提升演练的实战价值。
+## Pitch Narrative
 
-### 2. 技术创新 (Innovations)
-*   **LLM 驱动的上下文感知生成**:
-    *   利用大模型理解秘密类型（如 `AWS Access Key`），自动生成符合逻辑的代码片段、配置文件或对话上下文，而非简单的字符串拼接，使得泄露场景在语义上连贯、逼真。
-*   **智能场景路由与自适应**:
-    *   内置场景分析模块，自动判断某类秘密最可能出现的场景（例如：数据库连接串 -> 配置文件截图；临时 Token -> 聊天记录截图），无需人工指定。
-*   **全模态渲染管线**:
-    *   支持从文本到 IDE 截图、CLI 录屏、语音合成、PDF/Word/PPT 文档的自动化渲染，并支持为图像注入噪声以模拟真实截图的压缩损伤，用于评估 OCR 及视觉模型的鲁棒性。
+### The blind spot
+Modern leak incidents are no longer text-only. In practice, secrets leak through screenshots, recordings, meetings, and office documents. Traditional DLP coverage is often insufficient for these channels.
 
-## 项目结构
+### The solution
+Deeptrace simulates realistic leak trajectories end to end. Instead of randomly inserting secret strings, it uses LLM-driven contextual generation to place secrets into coherent host environments, then renders them into multimodal artifacts.
 
-```
-universe_gen_scripts/
-├── main.py              # 主入口脚本，负责调度和流程控制
-├── llm_utils.py         # LLM 交互模块，负责场景分析 (Scenario Analysis) 和内容生成 (Content Generation)
+### Practical value
+1. DLP cold start: generate large synthetic datasets without exposing production secrets.
+2. Red/blue exercises: produce believable honey artifacts for adversary engagement.
+3. Security awareness: create immersive leak examples for internal training.
+
+### Vision
+Simulating the unseen, to trace the unknown.
+
+## Why Deeptrace Matters
+
+1. Multimodal coverage instead of text-only assumptions.
+Traditional DLP workflows mostly focus on text logs. Real incidents often happen through screenshots, recordings, shared slides, and meeting audio. Deeptrace fills that practical gap.
+
+2. Safe synthetic data for model training.
+High-quality leak datasets are hard to collect because real secrets are regulated and dangerous to circulate. Deeptrace produces high-fidelity synthetic samples without exposing production credentials.
+
+3. Better realism for offensive and defensive drills.
+Security exercises become more actionable when bait files and leak traces look operationally authentic.
+
+## Core Innovations
+
+1. LLM-based contextual generation.
+Deeptrace does not only paste a secret string into random text. It generates semantically coherent host context such as code snippets, config fragments, chat logs, and business documents.
+
+2. Adaptive scene routing.
+For visual modalities, the system can infer where a secret is most likely to appear (IDE, CLI, chat, config, UI), reducing manual rule authoring.
+
+3. End-to-end multimodal rendering pipeline.
+The same scenario can be rendered into static images, scrolling videos, speech, PDF, Word, and PPT outputs to emulate real-world leakage surfaces.
+
+4. Robustness-oriented augmentation.
+Optional noise and compression-like perturbations help evaluate OCR and vision models under imperfect capture conditions.
+
+## Incremental Development Story
+
+Deeptrace is intentionally built in layers, and this evolution is important to understand the current architecture:
+
+1. Phase 1: Scenario generation and visual rendering.
+The initial version focused on LLM-driven scene synthesis and image/video outputs.
+
+2. Phase 2: Audio and document modalities.
+Audio, PDF, Word, and PPT generators were added to cover broader enterprise leakage channels.
+
+3. Phase 3: Secret generator module (added later).
+The key and network-string generator was introduced as a later enhancement to support scalable synthetic secret creation. This module is an incremental extension, not the original core, and is now integrated as an optional upstream source for scenario payloads.
+
+This staged growth explains why some modules look more mature than others and why interfaces evolved over time.
+
+## Supported Modalities
+
+1. Image: IDE/CLI/chat/config/UI screenshots.
+2. Video: Pan/scroll videos generated from visual scenes.
+3. Audio: Secret mention simulation via TTS.
+4. PDF: Formal leak-like document artifacts.
+5. Word: Internal memo and handoff style documents.
+6. PPT: Presentation-style sensitive content artifacts.
+
+## Project Structure
+
+```text
+.
+├── main.py
+├── llm_utils.py
 ├── config/
-│   ├── config.json      # 实际运行配置（脚本读取此文件）
-│   └── config_sample.json # 配置模板
-├── generators/          # 各模态的具体生成器模块
-│   ├── secret_generators
-│       ├── Key_Gen.py   #生成伪造的平台连接密钥 
-│       ├── secret_gen.py #生成器封装部分，为两类生成提供简单外部接口
-│       └── NetworkStr_Gen.py #生成数据库等访问链接
-│   ├── __init__.py
-│   ├── vscode_gen.py    # 生成 IDE 代码截图 (Python/JS/Java)
-│   ├── cli_gen.py       # 生成终端命令行截图
-│   ├── chat_gen.py      # 生成团队聊天记录截图
-│   ├── config_gen.py    # 生成配置文件截图 (YAML/INI/.env)
-│   ├── ui_gen.py        # 生成 Web UI 截图 (Dashboard/Console/JSON)
-│   ├── video_utils.py   # 视频生成工具，用于将图片转换为平移/滚动的视频
-│   ├── audio_gen.py     # 生成音频文件 (MP3/WAV)，支持在线(gTTS)和离线(espeak)
-│   ├── pdf_gen.py       # 生成 PDF 文档
-│   ├── word_gen.py      # 生成 Word (.docx) 文档
-│   └── ppt_gen.py       # 生成 PPT (.pptx) 演示文稿
-├── output_sample/     # 样例输出目录
-└── output/     # 默认输出目录
-
+│   ├── config.json
+│   └── config_sample.json
+├── generators/
+│   ├── secret_generators/
+│   │   ├── Key_Gen.py
+│   │   ├── NetworkStr_Gen.py
+│   │   └── secret_gen.py
+│   ├── audio_gen.py
+│   ├── chat_gen.py
+│   ├── cli_gen.py
+│   ├── config_gen.py
+│   ├── pdf_gen.py
+│   ├── ppt_gen.py
+│   ├── ui_gen.py
+│   ├── video_utils.py
+│   ├── vscode_gen.py
+│   └── word_gen.py
+├── output/
+└── output_sample/
 ```
 
-## 功能特性
+## Quick Start
 
-支持以下 6 种模态生成：
+### 1. Environment
 
-1.  **Image (图片)**:
-    *   自动根据秘密类型选择最合适的场景（IDE 代码、CLI 终端、Chat 聊天、Config 配置、Web UI）。
-    *   生成高分辨率 PNG 图片。
-2.  **Video (视频)**:
-    *   基于生成的长图，创建平移/滚动的 MP4 视频，模拟用户在屏幕上浏览的效果。
-3.  **Audio (音频)**:
-    *   生成朗读秘密或在会议中提及秘密的语音文件。
-    *   优先使用 Google TTS (在线)，网络不通时自动降级为 System TTS (离线 WAV)。
-4.  **PDF (文档)**:
-    *   生成包含秘密的正式 PDF 文档（如发票、合同、技术手册）。
-5.  **Word (文档)**:
-    *   生成包含秘密的 Word 文档（如内部备忘录、交接文档）。
-6.  **PPT (演示文稿)**:
-    *   生成包含秘密的 PowerPoint 幻灯片。
+- Python 3.8+
+- Node.js 18+
+- LLM API key
 
-## 安装依赖
-
-请确保安装了以下 Python 库及系统依赖：
+### 2. Install dependencies
 
 ```bash
-# Python 依赖
-pip install openai pillow opencv-python numpy gtts pyttsx3 reportlab python-docx python-pptx requests sshkey-tools
-
-# 系统依赖 (Linux)
-# 用于离线音频生成
-sudo apt-get install -y espeak-ng 
+pip install -r requirements.txt
+sudo apt-get install -y espeak-ng
 ```
 
-## 使用方法
+### 3. Configure runtime
 
-### 1. 准备配置文件 (`config/config.json`)
+Create or edit `config/config.json` based on `config/config_sample.json`.
 
-先参考 `config/config_sample.json`，再编辑 `config/config.json`。
-配置字段如下：
+Key fields:
+- `api_key`: LLM API key
+- `base_url`: LLM API endpoint
+- `output_dir`: output folder
+- `add_noise`: whether to add visual noise
+- `items`: generation list (`secret`, `secret_type`, `modality`, optional `scene`)
 
-*   `api_key`：大模型 API Key
-*   `base_url`：大模型 API Base URL
-*   `output_dir`：输出目录
-*   `add_noise`：是否为图片场景加入轻微噪声
-*   `items`：待生成样本列表（每项包含 `secret`、`secret_type`、`modality`、`scene`[可选]）
-
-```json
-{
-  "api_key": "YOUR_LLM_API_KEY",
-  "base_url": "YOUR_LLM_BASE_URL",
-  "output_dir": "output_universe",
-  "add_noise": false,
-  "items": [
-    {
-      "secret": "sk-proj-123456",
-      "secret_type": "OpenAI API Key",
-      "modality": "image",
-      "scene": "chat" 
-    },
-    {
-      "secret": "postgres://user:pass@db:5432",
-      "secret_type": "Database Connection String",
-      "modality": "video"
-    },
-    {
-      "secret": "ghp_secret_token",
-      "secret_type": "GitHub Token",
-      "modality": "audio"
-    },
-    {
-      "secret": "AKIAIOSFODNN7EXAMPLE",
-      "secret_type": "AWS Access Key",
-      "modality": "pdf"
-    }
-  ]
-}
-```
-
-### 2. 运行生成脚本
+### 4. Run generator
 
 ```bash
 python main.py
-
-# 或者指定其他配置路径
 python main.py --config config/config_sample.json
-
 ```
 
-*   `--config`: 配置文件路径，默认为 `config/config.json`。
+### 5. Run backend (optional web workflow)
 
-## 生成逻辑说明
-
-1.  **分析阶段**: 脚本首先将 `secret_type` 发送给 LLM。
-    *   如果是 `image` 或 `video` 模态：
-        *   若 `config` 中指定了 `scene` (可选值: `ide`, `cli`, `chat`, `config`, `ui`)，则直接使用该场景。
-        *   若未指定 `scene`，LLM 会判断该秘密最可能出现在哪种视觉场景。
-    *   如果是 `audio`, `pdf`, `word`, `ppt`，则直接使用对应的生成器。
-2.  **内容生成**: LLM 生成逼真的填充内容（代码片段、对话记录、文档正文等），并将秘密嵌入其中。
-3.  **渲染阶段**: 调用对应的生成器模块将文本内容渲染为最终文件。
-
-
-## 后续补充
-1. 图片噪声可配置
-通过 `config/config.json` 中的 `add_noise` 字段控制是否为图片场景添加轻微噪声；
-2. LLM 内容生成篇幅限制
-在向 LLM 发送生成请求时，增加了对上下文篇幅的严格限制，确保生成的内容长度维持在密钥（Secret）长度的 2-3 倍 左右。
-
-
-## 秘密生成器
-
-### 接口
-
-使用请import /generator/secret_generator/下*secret_gen.py*
-
-#### 密钥类
-
-Keygen(modeset:int) -> str  ：密钥类秘密的基础生成接口，
-需要手动通过指定modeset值规定目标类型，现框架内类型如下:
-``` python
-class Platform(Enum):
-    OpenAI_Personal = 1
-    Deepseek        = 2
-    Bailian         = 3     #Aliyun
-    OpenAI_Project  = 4     # ***Unimplemented***
-    Moonshot        = 5
-    HuggingFace     = 6
-    AWSAccess       = 7
-    Github          = 8
-    OpenSSH         = 9
+```bash
+cd backend
+pip install -r requirements.txt
+python main.py
 ```
-分别格式如下:
-```
-OpenAI_Personal : sk-{48个字母数字混合，不限制大小写}
-Deepseek        : sk-{16byte Hex值，返回为小写}
-Bailian         : 同Deepseek
-OpenAI_Project  : 无参考文档，此处略 ##注意，实现暂时留空，返回为空值##
-Moonshot        : 同OpenAI_Personal
-HuggingFace     : hf_{34字符的字母，不限制大小写}
-AWSAccess       : {4字符大写字母前缀}{16字符大写字母与数字}{40字符base64字符}
-Github          : ghp+{36字符字母数字混合，不限制大小写}
-OpenSSH         : 标准OpenSSH Private Key格式 #协议生成，务必保证本地包依赖环境完整#
-```
-RandKeygen() -> str : 密钥类秘密随机生成接口，无需手动指定目标类型
-*请调用端做空串处理*
 
-#### 网络串类
+Backend endpoints:
+- Swagger UI: http://localhost:8000/docs
+- ReDoc: http://localhost:8000/redoc
 
-Strgen(modeset:int) -> str : 网络串秘密基础生成接口，须手动指定目标模式，支持类型如下:
-``` python
-class Strtype(Enum):
-    PostgreSQL=1
-    MySQL=2
-    MongoDB=3
-    HTTPAuth=4
-    Redis=5
-    Sentry=6
-```
-分别格式如下：
-```
-PostgreSQL      : postgresql://{username}:{pwd}@{ipv4_addr}:{port_idx}/{dbname}
-MySQL           : jdbc:mysql://{ipvr_addr}:{port_idx}/{dbname}?user={username}&password={pwd}!
-MongoDB         : mongodb://{username}:{pwd}!@{ipv4_addr}:{port_idx}/?authSource={source, e.g. admin}
-HTTPAuth        : http://{username}:{pwd}!@{ipv4_addr}:8080
-Redis           : redis://:{pwd}!@{ipv4_addr}:{port_idx}/0
-Sentry DSN      : http://{16byte Hex Token}@o{16len numbers}.ingest.us.sentry.io/{16len numbers}
-```
-RandStrgen() -> str : 网络串秘密随机生成接口，无需手动指定目标类型
+### 6. Run frontend (optional web workflow)
 
-#### 外封装
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-AllRandgen() -> str : 随机选择生成类型且随机选择目标类型
+Frontend: http://localhost:3000
+
+Typical web flow:
+1. Register and log in.
+2. Create a task from dashboard.
+3. Configure secret type, modality, and scene.
+4. Submit task and review outputs.
+
+## Generation Flow
+
+1. Analyze `secret_type` and modality.
+2. Select or infer scene for image/video tasks.
+3. Generate context-rich content with embedded secret.
+4. Render with the modality-specific generator.
+
+## Secret Generator (Incremental Module)
+
+The secret generator was added after the initial multimodal pipeline and is now available as a reusable component.
+
+- Key generator APIs:
+    - `Keygen(modeset: int) -> str`
+    - `RandKeygen() -> str`
+- Network string APIs:
+    - `Strgen(modeset: int) -> str`
+    - `RandStrgen() -> str`
+- Unified wrapper:
+    - `AllRandgen() -> str`
+
+See source files under `generators/secret_generators/` for supported enum types and format constraints.
+
+## Documentation Note
+
+To keep docs maintainable, previous standalone pitch and usage docs are merged into this README.
